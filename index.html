@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suitor Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+/* FALLBACK THEME VARIABLES (Fixes the invisible text/backgrounds) */
+:root {
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f8f9fa;
+  --color-background-info: #e6f1fb;
+  --color-background-danger: #fcebeb;
+  --color-border-secondary: #ced4da;
+  --color-border-tertiary: #e9ecef;
+  --color-border-info: #bee5eb;
+  --color-border-danger: #f5c6cb;
+  --color-text-primary: #212529;
+  --color-text-secondary: #6c757d;
+  --color-text-info: #0c447c;
+  --color-text-danger: #791f1f;
+  --border-radius-md: 6px;
+  --border-radius-lg: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); color: var(--color-text-primary); background: #fafafa; padding: 20px; }
+.container { max-width: 1200px; margin: 0 auto; padding: 1.25rem 0; }
+.top-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 1.5rem; }
+.top-bar h2 { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+.top-bar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { padding: 7px 14px; font-size: 13px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: #fff; color: var(--color-text-primary); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background 0.15s; }
+.btn:hover { background: var(--color-background-secondary); }
+.btn-primary { background: var(--color-background-info); color: var(--color-text-info); border-color: var(--color-border-info); }
+.btn-primary:hover { opacity: 0.85; }
+.btn-danger { background: var(--color-background-danger); color: var(--color-text-danger); border-color: var(--color-border-danger); }
+.section-tabs { display: flex; gap: 4px; margin-bottom: 1.25rem; background: var(--color-background-secondary); padding: 4px; border-radius: var(--border-radius-md); width: fit-content; }
+.tab { padding: 6px 16px; font-size: 13px; border-radius: 6px; cursor: pointer; border: none; background: transparent; color: var(--color-text-secondary); transition: all 0.15s; }
+.tab.active { background: var(--color-background-primary); color: var(--color-text-primary); font-weight: 500; box-shadow: 0 0 0 0.5px var(--color-border-tertiary); }
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+.suitor-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.suitor-card.debt { border-color: #f09595; }
+.suitor-card.low { border-color: #fac775; }
+.suitor-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 14px; flex-shrink: 0; }
+.suitor-name { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+.suitor-meta { font-size: 12px; color: var(--color-text-secondary); }
+.credit-display { display: flex; align-items: baseline; gap: 6px; margin-bottom: 12px; }
+.credit-score { font-size: 28px; font-weight: 500; }
+.credit-label { font-size: 12px; color: var(--color-text-secondary); }
+.credit-limit-bar { height: 5px; border-radius: 3px; background: var(--color-background-secondary); margin-bottom: 12px; overflow: hidden; }
+.credit-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.status-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 8px; border-radius: 20px; margin-bottom: 10px; }
+.ledger-mini { font-size: 12px; border-top: 0.5px solid var(--color-border-tertiary); padding-top: 8px; margin-top: 8px; max-height: 90px; overflow-y: auto; }
+.ledger-row { display: flex; justify-content: space-between; padding: 2px 0; color: var(--color-text-secondary); }
+.ledger-row .amt.pos { color: #1D9E75; font-weight: bold; }
+.ledger-row .amt.neg { color: #D85A30; font-weight: bold; }
+.card-actions { display: flex; gap: 6px; margin-top: 10px; }
+.card-actions button { flex: 1; padding: 5px 0; font-size: 12px; border: 0.5px solid var(--color-border-tertiary); border-radius: 6px; background: #fff; color: var(--color-text-secondary); cursor: pointer; }
+.card-actions button:hover { background: var(--color-background-secondary); }
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--color-background-primary); border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); padding: 1.5rem; width: 380px; max-width: 95vw; }
+.modal h3 { font-size: 16px; font-weight: 500; margin-bottom: 1rem; }
+.form-group { margin-bottom: 12px; }
+.form-group label { display: block; font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 7px 10px; font-size: 13px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); }
+.form-group textarea { resize: vertical; min-height: 60px; font-family: var(--font-sans); }
+.form-row { display: flex; gap: 10px; }
+.form-row .form-group { flex: 1; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1rem; }
+.empty-state { text-align: center; padding: 3rem 1rem; color: var(--color-text-secondary); font-size: 14px; }
+.ledger-full { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+.ledger-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ledger-table th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 500; color: var(--color-text-secondary); border-bottom: 0.5px solid var(--color-border-tertiary); background: var(--color-background-secondary); }
+.ledger-table td { padding: 10px 14px; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); vertical-align: middle; }
+.ledger-table tr:last-child td { border-bottom: none; }
+.ledger-table tr:hover td { background: var(--color-background-secondary); }
+.tag-owner { font-size: 11px; padding: 2px 7px; border-radius: 20px; }
+.summary-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 1.25rem; }
+.stat-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px; border: 0.5px solid var(--color-border-tertiary); }
+.stat-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.stat-value { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="top-bar">
+    <div>
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:2px;">Social Credit Bureau</div>
+      <h2>Suitor Tracker</h2>
+    </div>
+    <div class="top-bar-actions">
+      <button class="btn" onclick="openTransactionModal()"><span aria-hidden="true">+</span> Log transaction</button>
+      <button class="btn btn-primary" onclick="addSuitorModal()"><span aria-hidden="true">+👤</span> Add suitor</button>
+      <button class="btn" onclick="exportCSV()">Export CSV</button>
+    </div>
+  </div>
+
+  <div class="section-tabs">
+    <button class="tab active" onclick="switchTab('cards', this)">Cards</button>
+    <button class="tab" onclick="switchTab('ledger', this)">Ledger</button>
+  </div>
+
+  <div id="view-cards">
+    <div class="summary-stats" id="summary-stats"></div>
+    <div class="cards-grid" id="cards-container"></div>
+  </div>
+
+  <div id="view-ledger" style="display:none;">
+    <div class="ledger-full">
+      <table class="ledger-table">
+        <thead>
+          <tr>
+            <th>Date</th><th>Suitor</th><th>Owner</th><th>Reason</th><th style="text-align:right">Amount</th><th style="text-align:right">Balance after</th>
+          </tr>
+        </thead>
+        <tbody id="ledger-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="suitor-modal">
+  <div class="modal">
+    <h3 id="suitor-modal-title">Add suitor</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Name</label><input type="text" id="s-name" placeholder="e.g. Marco"></div>
+      <div class="form-group"><label>Owner</label>
+        <select id="s-owner">
+          <option value="Me">Me</option>
+          <option value="Friend">Friend</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Starting credits</label><input type="number" id="s-credits" value="100"></div>
+      <div class="form-group"><label>Credit limit (debt floor)</label><input type="number" id="s-limit" value="-50"></div>
+    </div>
+    <div class="form-group"><label>Notes (optional)</label><textarea id="s-notes" placeholder="How you met, traits, etc."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSuitor()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="tx-modal">
+  <div class="modal">
+    <h3>Log transaction</h3>
+    <div class="form-row">
+      <div class="form-group" style="flex:2"><label>Suitor</label>
+        <select id="tx-suitor"></select>
+      </div>
+      <div class="form-group" style="flex:1"><label>Type</label>
+        <select id="tx-type">
+          <option value="credit">+ Credit</option>
+          <option value="debit">− Debit</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>Amount</label><input type="number" id="tx-amount" value="10" min="1"></div>
+    <div class="form-group"><label>Reason</label><input type="text" id="tx-reason" placeholder="e.g. Remembered my birthday"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTransaction()">Log it</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// 1. DATABASE CONFIGURATION
+const SUPABASE_URL = "https://jbyziurcbnfrqjmvifcs.supabase.co"; 
+const SUPABASE_ANON_KEY = "sb_publishable_53v1RK0Nl7_qZbpLRzQCyw_4vO2u2Kb"; 
+
+let db;
+try {
+  db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  console.log("Supabase Client Initialized!");
+} catch (e) {
+  console.error("Supabase failed to initialize.", e);
+}
+
+const AVATAR_COLORS = [
+  {bg:'#EEEDFE',text:'#3C3489'},{bg:'#E1F5EE',text:'#085041'},
+  {bg:'#FAECE7',text:'#712B13'},{bg:'#FBEAF0',text:'#72243E'},
+  {bg:'#E6F1FB',text:'#0C447C'},{bg:'#EAF3DE',text:'#27500A'},
+  {bg:'#FAEEDA',text:'#633806'}
+];
+
+// These will hold our live database data globally
+let suitors = [];
+let transactions = [];
+let editingId = null;
+let currentTab = 'cards';
+
+// 2. LIVE DATA FETCHING
+async function fetchDatabaseData() {
+  try {
+    // Explicit selection targeting the literal quoted "limit" column mapping
+    const { data: suitorsData, error: sError } = await db
+      .from('suitors')
+      .select('id, name, owner, credits, limit, notes, color_idx, created_at')
+      .order('name', { ascending: true });
+      
+    if (sError) throw sError;
+    suitors = suitorsData || [];
+
+    // Fetch all transactions from your Supabase 'transactions' table
+    const { data: txData, error: tError } = await db
+      .from('transactions')
+      .select('*')
+      .order('date', { ascending: false });
+      
+    if (tError) throw tError;
+    transactions = txData || [];
+
+    // Refresh the view
+    if (currentTab === 'cards') {
+      renderCards();
+    } else {
+      renderLedger();
+    }
+  } catch (err) {
+    console.error("Error fetching data from database:", err.message);
+    alert("Could not load data from Supabase. Make sure your tables exist!");
+  }
+}
+
+// 3. ENGINE VISUAL FUNCTIONS
+function getStatus(s){
+  if(s.credits < s.limit) return {label:'In debt 🚨',bg:'#FCEBEB',color:'#791F1F'};
+  if(s.credits < 0) return {label:'Negative ⚠️',bg:'#FAEEDA',color:'#633806'};
+  if(s.credits < 50) return {label:'Low credit',bg:'#FAEEDA',color:'#633806'};
+  if(s.credits >= 200) return {label:'Excellent ★',bg:'#E1F5EE',color:'#085041'};
+  return {label:'Good standing',bg:'#EAF3DE',color:'#27500A'};
+}
+
+function getBarColor(s){
+  if(s.credits < s.limit) return '#E24B4A';
+  if(s.credits < 0) return '#EF9F27';
+  if(s.credits < 50) return '#FAC775';
+  return '#1D9E75';
+}
+
+function getBarWidth(s){
+  const max = 300, min = s.limit;
+  const pct = Math.max(0,Math.min(1,(s.credits - min)/(max - min)));
+  return (pct*100).toFixed(1)+'%';
+}
+
+function initials(name){ return name.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase(); }
+
+function renderCards(){
+  const c = document.getElementById('cards-container');
+  if(!suitors.length){ 
+    c.innerHTML='<div class="empty-state">No suitors found in database. Add one!</div>'; 
+    renderStats(); 
+    return; 
+  }
+  c.innerHTML = suitors.map(s=>{
+    const col = AVATAR_COLORS[s.color_idx % AVATAR_COLORS.length];
+    const st = getStatus(s);
+    const cardClass = s.credits < s.limit ? 'suitor-card debt' : (s.credits < 50 ? 'suitor-card low' : 'suitor-card');
+    
+    // Filter the last 4 transactions for this specific suitor
+    const myTxs = transactions.filter(t=>t.suitor_id===s.id).slice(0,4);
+    const mini = myTxs.map(t=>`<div class="ledger-row"><span>${t.reason}</span><span class="amt ${t.type==='credit'?'pos':'neg'}">${t.type==='credit'?'+':'-'}${t.amount}</span></div>`).join('');
+    
+    return `<div class="${cardClass}">
+      <div class="suitor-card-header">
+        <div class="avatar" style="background:${col.bg};color:${col.text}">${initials(s.name)}</div>
+        <div>
+          <div class="suitor-name">${s.name}</div>
+          <div class="suitor-meta"><span class="tag-owner" style="background:${s.owner==='Me'?'#E6F1FB':'#FBEAF0'};color:${s.owner==='Me'?'#0C447C':'#72243E'}">${s.owner}</span></div>
+        </div>
+      </div>
+      <div class="credit-display">
+        <div class="credit-score">${s.credits}</div>
+        <div class="credit-label">credits / limit ${s.limit}</div>
+      </div>
+      <div class="credit-limit-bar"><div class="credit-bar-fill" style="width:${getBarWidth(s)};background:${getBarColor(s)}"></div></div>
+      <span class="status-badge" style="background:${st.bg};color:${st.color}">${st.label}</span>
+      ${mini ? `<div class="ledger-mini">${mini}</div>` : ''}
+      ${s.notes?`<div style="font-size:11px;color:var(--color-text-secondary);margin-top:6px;font-style:italic">${s.notes}</div>`:''}
+      <div class="card-actions">
+        <button onclick="quickCredit(${s.id})">Credit</button>
+        <button onclick="quickDebit(${s.id})">Debit</button>
+        <button onclick="editSuitor(${s.id})">Edit</button>
+        <button onclick="deleteSuitor(${s.id})" style="color:var(--color-text-danger)">Trash</button>
+      </div>
+    </div>`;
+  }).join('');
+  renderStats();
+}
+
+function renderStats(){
+  const el = document.getElementById('summary-stats');
+  if(!el) return;
+  const total = suitors.length;
+  const inDebt = suitors.filter(s=>s.credits<s.limit).length;
+  const topS = suitors.reduce((a,b)=>a?(a.credits>b.credits?a:b):b, null);
+  const worstS = suitors.reduce((a,b)=>a?(a.credits<b.credits?a:b):b, null);
+  el.innerHTML = `
+    <div class="stat-card"><div class="stat-label">Total suitors</div><div class="stat-value">${total}</div></div>
+    <div class="stat-card"><div class="stat-label">In credit debt</div><div class="stat-value" style="color:${inDebt?'#D85A30':'var(--color-text-primary)'}">${inDebt}</div></div>
+    <div class="stat-card"><div class="stat-label">Highest score</div><div class="stat-value" style="color:#1D9E75;font-size:16px">${topS?topS.name+' ('+topS.credits+')':'—'}</div></div>
+    <div class="stat-card"><div class="stat-label">Lowest score</div><div class="stat-value" style="color:#D85A30;font-size:16px">${worstS?worstS.name+' ('+worstS.credits+')':'—'}</div></div>
+  `;
+}
+
+function renderLedger(){
+  const tbody = document.getElementById('ledger-tbody');
+  if(!transactions.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--color-text-secondary);padding:2rem">No transactions yet.</td></tr>';return;}
+  tbody.innerHTML = transactions.map(t=>{
+    const s = suitors.find(x=>x.id===t.suitor_id);
+    const name = s?s.name:'(deleted)';
+    const owner = s?s.owner:'—';
+    const col = AVATAR_COLORS[(s?.color_idx||0)%AVATAR_COLORS.length];
+    return `<tr>
+      <td style="color:var(--color-text-secondary);white-space:nowrap">${t.date}</td>
+      <td><span style="background:${col.bg};color:${col.text};padding:2px 8px;border-radius:20px;font-size:12px">${name}</span></td>
+      <td><span class="tag-owner" style="background:${owner==='Me'?'#E6F1FB':'#FBEAF0'};color:${owner==='Me'?'#0C447C':'#72243E'};padding:2px 7px;border-radius:20px;font-size:11px">${owner}</span></td>
+      <td>${t.reason}</td>
+      <td style="text-align:right;font-weight:500;color:${t.type==='credit'?'#1D9E75':'#D85A30'}">${t.type==='credit'?'+':'-'}${t.amount}</td>
+      <td style="text-align:right;color:${t.balance_after<0?'#D85A30':'var(--color-text-primary)'}">${t.balance_after}</td>
+    </tr>`;
+  }).join('');
+}
+
+function switchTab(tab, btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  currentTab = tab;
+  document.getElementById('view-cards').style.display = tab==='cards'?'':'none';
+  document.getElementById('view-ledger').style.display = tab==='ledger'?'':'none';
+  if(tab==='ledger') renderLedger();
+}
+
+function addSuitorModal(){
+  editingId = null;
+  document.getElementById('suitor-modal-title').textContent = 'Add suitor';
+  document.getElementById('s-name').value='';
+  document.getElementById('s-credits').value=100;
+  document.getElementById('s-limit').value=-50;
+  document.getElementById('s-notes').value='';
+  document.getElementById('suitor-modal').classList.add('open');
+}
+
+function editSuitor(id){
+  editingId = id;
+  const s = suitors.find(x=>x.id===id);
+  document.getElementById('suitor-modal-title').textContent = 'Edit suitor';
+  document.getElementById('s-name').value=s.name;
+  document.getElementById('s-owner').value=s.owner;
+  document.getElementById('s-credits').value=s.credits;
+  document.getElementById('s-limit').value=s.limit;
+  document.getElementById('s-notes').value=s.notes||'';
+  document.getElementById('suitor-modal').classList.add('open');
+}
+
+// 4. DATABASE WRITE ACTIONS
+async function saveSuitor(){
+  const name = document.getElementById('s-name').value.trim();
+  if(!name){alert('Name is required');return;}
+  const credits = parseInt(document.getElementById('s-credits').value)||0;
+  const limitValue = parseInt(document.getElementById('s-limit').value)||-50;
+  const owner = document.getElementById('s-owner').value;
+  const notes = document.getElementById('s-notes').value.trim();
+  
+  try {
+    if(editingId){
+      const { error } = await db.from('suitors')
+        .update({ name, owner, credits, "limit": limitValue, notes })
+        .eq('id', editingId);
+      if (error) throw error;
+    } else {
+      const randomColorIdx = Math.floor(Math.random() * AVATAR_COLORS.length);
+      const { error } = await db.from('suitors')
+        .insert([{ name, owner, credits, "limit": limitValue, notes, color_idx: randomColorIdx }]);
+      if (error) throw error;
+    }
+    closeModals();
+    await fetchDatabaseData(); 
+  } catch (err) {
+    alert("Error saving suitor: " + err.message);
+  }
+}
+
+async function deleteSuitor(id){
+  if(!confirm('Remove this suitor and all related transactions?')) return;
+  try {
+    await db.from('transactions').delete().eq('suitor_id', id);
+    const { error } = await db.from('suitors').delete().eq('id', id);
+    if (error) throw error;
+    await fetchDatabaseData();
+  } catch (err) {
+    alert("Error deleting record: " + err.message);
+  }
+}
+
+function openTransactionModal(preId){
+  const sel = document.getElementById('tx-suitor');
+  sel.innerHTML = suitors.map(s=>`<option value="${s.id}">${s.name} (${s.owner})</option>`).join('');
+  if(preId) sel.value = preId;
+  document.getElementById('tx-amount').value=10;
+  document.getElementById('tx-reason').value='';
+  document.getElementById('tx-modal').classList.add('open');
+}
+
+function quickCredit(id){ openTransactionModal(id); document.getElementById('tx-type').value='credit'; }
+function quickDebit(id){ openTransactionModal(id); document.getElementById('tx-type').value='debit'; }
+
+async function saveTransaction(){
+  const suitorId = parseInt(document.getElementById('tx-suitor').value);
+  const type = document.getElementById('tx-type').value;
+  const amount = Math.abs(parseInt(document.getElementById('tx-amount').value)||0);
+  const reason = document.getElementById('tx-reason').value.trim()||'No reason given';
+  if(!amount){alert('Amount must be > 0');return;}
+  
+  const s = suitors.find(x=>x.id===suitorId);
+  if(!s) return;
+  
+  let newCredits = s.credits;
+  if(type==='credit') newCredits += amount;
+  else newCredits -= amount;
+  
+  const today = new Date().toISOString().slice(0,10);
+  
+  try {
+    const { error: sError } = await db.from('suitors')
+      .update({ credits: newCredits })
+      .eq('id', suitorId);
+    if (sError) throw sError;
+
+    const { error: tError } = await db.from('transactions')
+      .insert([{ 
+        suitor_id: suitorId, 
+        type, 
+        amount, 
+        reason, 
+        date: today, 
+        balance_after: newCredits 
+      }]);
+    if (tError) throw tError;
+
+    closeModals();
+    await fetchDatabaseData();
+  } catch (err) {
+    alert("Transaction process failed: " + err.message);
+  }
+}
+
+function closeModals(){
+  document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('open'));
+}
+
+function exportCSV(){
+  const header = ['Date','Suitor','Owner','Type','Amount','Reason','Balance after','Status'];
+  const rows = transactions.map(t=>{
+    const s = suitors.find(x=>x.id===t.suitor_id)||{name:'deleted',owner:'—'};
+    const st = getStatus(s);
+    return [t.date,s.name,s.owner,t.type,t.type==='credit'?'+'+t.amount:'-'+t.amount,t.reason,t.balance_after,st.label].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');
+  });
+  const suitorRows = ['','','SUITOR SUMMARY','','','','',''].join(',')+'\n'+
+    ['Suitor','Owner','Current Credits','Limit','Status','Notes','',''].join(',')+'\n'+
+    suitors.map(s=>{const st=getStatus(s);return[s.name,s.owner,s.credits,s.limit,st.label,s.notes||'','',''].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');}).join('\n');
+  const csv = [header.join(','),...rows,'',suitorRows].join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'suitor_social_credits.csv';
+  a.click();
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModals();}));
+
+// 5. APP INITIALIZATION TRIGGER
+fetchDatabaseData();
+</script>
+</body>
+</html>
