@@ -260,7 +260,13 @@ body { font-family: var(--font-sans); color: var(--color-text-primary); backgrou
 const SUPABASE_URL = "https://jbyziurcbnfrqjmvifcs.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_53v1RK0Nl7_qZbpLRzQCyw_4vO2u2Kb";
 
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const { createClient } = window.supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});
 
 // ══════════════════════════════════════
 // 2. STATE
