@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Boycrazy Tracker</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -26,7 +25,6 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: var(--font-sans); color: var(--color-text-primary); background: #fafafa; padding: 20px; }
 
-/* ── AUTH SCREEN ── */
 #auth-screen {
   min-height: 100vh;
   display: flex;
@@ -35,6 +33,8 @@ body { font-family: var(--font-sans); color: var(--color-text-primary); backgrou
   background: #fafafa;
   margin: -20px;
 }
+#app-screen { display: none; }
+
 .auth-card {
   background: #fff;
   border: 0.5px solid var(--color-border-tertiary);
@@ -44,7 +44,7 @@ body { font-family: var(--font-sans); color: var(--color-text-primary); backgrou
   max-width: 95vw;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
-.auth-card h1 { font-size: 20px; font-weight: 500; margin-bottom: 4px; }
+.auth-card h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
 .auth-card .subtitle { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 1.5rem; }
 .auth-tabs { display: flex; gap: 4px; background: var(--color-background-secondary); padding: 4px; border-radius: var(--border-radius-md); margin-bottom: 1.25rem; }
 .auth-tab { flex: 1; padding: 6px; font-size: 13px; border-radius: 5px; border: none; background: transparent; color: var(--color-text-secondary); cursor: pointer; text-align: center; }
@@ -52,8 +52,6 @@ body { font-family: var(--font-sans); color: var(--color-text-primary); backgrou
 .auth-error { background: var(--color-background-danger); color: var(--color-text-danger); border: 0.5px solid var(--color-border-danger); border-radius: var(--border-radius-md); padding: 8px 12px; font-size: 13px; margin-bottom: 12px; display: none; }
 .auth-success { background: #e1f5ee; color: #085041; border: 0.5px solid #9fe1cb; border-radius: var(--border-radius-md); padding: 8px 12px; font-size: 13px; margin-bottom: 12px; display: none; }
 
-/* ── MAIN APP ── */
-#app-screen { display: none; }
 .container { max-width: 1200px; margin: 0 auto; padding: 1.25rem 0; }
 .top-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 1.5rem; }
 .top-bar h2 { font-size: 18px; font-weight: 500; }
@@ -119,31 +117,24 @@ body { font-family: var(--font-sans); color: var(--color-text-primary); backgrou
 </head>
 <body>
 
-<!-- ══════════════════════════════════════
-     AUTH SCREEN
-══════════════════════════════════════ -->
-<div id="auth-screen" style="display:flex;">
+<!-- AUTH SCREEN — visible by default -->
+<div id="auth-screen">
   <div class="auth-card">
-    <h1>🗂️ Suitor Tracker</h1>
+    <h1>🗂️ Boycrazy Tracker</h1>
     <p class="subtitle">Social Credit Bureau — members only</p>
-
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="switchAuthTab('login', this)">Log in</button>
       <button class="auth-tab" onclick="switchAuthTab('signup', this)">Sign up</button>
     </div>
-
     <div id="auth-error" class="auth-error"></div>
     <div id="auth-success" class="auth-success"></div>
-
-    <!-- Sign up fields (hidden by default) -->
     <div id="signup-fields" style="display:none;">
       <div class="form-group">
         <label>Your display name</label>
         <input type="text" id="auth-displayname" placeholder="e.g. Meralisya">
-        <div class="field-note">This is how you'll appear as the owner of your suitors.</div>
+        <div class="field-note">This is how you'll appear as owner of your suitors.</div>
       </div>
     </div>
-
     <div class="form-group">
       <label>Email</label>
       <input type="email" id="auth-email" placeholder="you@email.com">
@@ -152,26 +143,18 @@ body { font-family: var(--font-sans); color: var(--color-text-primary); backgrou
       <label>Password</label>
       <input type="password" id="auth-password" placeholder="••••••••">
     </div>
-
-    <button class="btn btn-primary" id="auth-submit-btn" onclick="handleAuth()" style="width:100%;justify-content:center;padding:9px;">
-      Log in
-    </button>
-
-    <p style="font-size:12px;color:var(--color-text-secondary);margin-top:1rem;text-align:center;">
-      First time? Switch to Sign up to create your account.
-    </p>
+    <button class="btn btn-primary" id="auth-submit-btn" onclick="handleAuth()" style="width:100%;justify-content:center;padding:9px;">Log in</button>
+    <p style="font-size:12px;color:var(--color-text-secondary);margin-top:1rem;text-align:center;">First time? Switch to Sign up above.</p>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     MAIN APP
-══════════════════════════════════════ -->
-<div id="app-screen" style="display:none;">
+<!-- MAIN APP — hidden until logged in -->
+<div id="app-screen">
   <div class="container">
     <div class="top-bar">
       <div>
         <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:2px;">Social Credit Bureau</div>
-        <h2>Suitor Tracker</h2>
+        <h2>Boycrazy Tracker</h2>
       </div>
       <div class="top-bar-actions">
         <span class="user-pill"><span class="user-dot"></span><span id="user-name-display">...</span></span>
@@ -181,26 +164,18 @@ body { font-family: var(--font-sans); color: var(--color-text-primary); backgrou
         <button class="btn btn-sm" onclick="handleSignOut()" style="color:var(--color-text-secondary)">Sign out</button>
       </div>
     </div>
-
     <div class="section-tabs">
       <button class="tab active" onclick="switchTab('cards', this)">Cards</button>
       <button class="tab" onclick="switchTab('ledger', this)">Ledger</button>
     </div>
-
     <div id="view-cards">
       <div class="summary-stats" id="summary-stats"></div>
       <div class="cards-grid" id="cards-container"></div>
     </div>
-
     <div id="view-ledger" style="display:none;">
       <div class="ledger-full">
         <table class="ledger-table">
-          <thead>
-            <tr>
-              <th>Date</th><th>Suitor</th><th>Owner</th><th>Reason</th>
-              <th style="text-align:right">Amount</th><th style="text-align:right">Balance after</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Date</th><th>Suitor</th><th>Owner</th><th>Reason</th><th style="text-align:right">Amount</th><th style="text-align:right">Balance after</th></tr></thead>
           <tbody id="ledger-tbody"></tbody>
         </table>
       </div>
@@ -208,22 +183,17 @@ body { font-family: var(--font-sans); color: var(--color-text-primary); backgrou
   </div>
 </div>
 
-<!-- Add / Edit Suitor Modal -->
+<!-- Add/Edit Suitor Modal -->
 <div class="modal-overlay" id="suitor-modal">
   <div class="modal">
     <h3 id="suitor-modal-title">Add suitor</h3>
-    <div class="form-group">
-      <label>Suitor's name</label>
-      <input type="text" id="s-name" placeholder="e.g. Marco">
-    </div>
+    <div class="form-group"><label>Suitor's name</label><input type="text" id="s-name" placeholder="e.g. Marco"></div>
     <div class="form-row">
       <div class="form-group"><label>Starting credits</label><input type="number" id="s-credits" value="100"></div>
       <div class="form-group"><label>Debt floor (limit)</label><input type="number" id="s-limit" value="-50"></div>
     </div>
     <div class="form-group"><label>Notes (optional)</label><textarea id="s-notes" placeholder="How you met, traits, etc."></textarea></div>
-    <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:12px;">
-      Owner will be set to <strong id="owner-preview">you</strong> automatically.
-    </p>
+    <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:12px;">Owner will be set to <strong id="owner-preview">you</strong> automatically.</p>
     <div class="modal-actions">
       <button class="btn" onclick="closeModals()">Cancel</button>
       <button class="btn btn-primary" onclick="saveSuitor()">Save</button>
@@ -238,10 +208,7 @@ body { font-family: var(--font-sans); color: var(--color-text-primary); backgrou
     <div class="form-row">
       <div class="form-group" style="flex:2"><label>Suitor</label><select id="tx-suitor"></select></div>
       <div class="form-group" style="flex:1"><label>Type</label>
-        <select id="tx-type">
-          <option value="credit">+ Credit</option>
-          <option value="debit">− Debit</option>
-        </select>
+        <select id="tx-type"><option value="credit">+ Credit</option><option value="debit">− Debit</option></select>
       </div>
     </div>
     <div class="form-group"><label>Amount</label><input type="number" id="tx-amount" value="10" min="1"></div>
@@ -253,24 +220,17 @@ body { font-family: var(--font-sans); color: var(--color-text-primary); backgrou
   </div>
 </div>
 
-<script>
-// ══════════════════════════════════════
-// 1. CONFIG — paste your Supabase credentials here
-// ══════════════════════════════════════
-const SUPABASE_URL = "https://jbyziurcbnfrqjmvifcs.supabase.co";
+<script type="module">
+// ── IMPORT SUPABASE (ES module — most reliable method) ──
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+// ── CONFIG — your credentials ──
+const SUPABASE_URL  = "https://jbyziurcbnfrqjmvifcs.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpieXppdXJjYm5mcnFqbXZpZmNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MTUxOTQsImV4cCI6MjA5NTE5MTE5NH0.jbHje6_mhctOi6oXF9mkuxEi9DaBFvglzyZvVbXSCbQ";
 
-const { createClient } = window.supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-  }
-});
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ══════════════════════════════════════
-// 2. STATE
-// ══════════════════════════════════════
+// ── STATE ──
 const AVATAR_COLORS = [
   {bg:'#EEEDFE',text:'#3C3489'},{bg:'#E1F5EE',text:'#085041'},
   {bg:'#FAECE7',text:'#712B13'},{bg:'#FBEAF0',text:'#72243E'},
@@ -278,25 +238,23 @@ const AVATAR_COLORS = [
   {bg:'#FAEEDA',text:'#633806'}
 ];
 
-let currentUser = null;       // Supabase auth user object
-let currentDisplayName = '';  // e.g. "Meralisya"
+let currentUser = null;
+let currentDisplayName = '';
 let suitors = [];
 let transactions = [];
 let editingId = null;
 let currentTab = 'cards';
 let authMode = 'login';
 
-// ══════════════════════════════════════
-// 3. AUTH LOGIC
-// ══════════════════════════════════════
-function switchAuthTab(mode, btn) {
+// ── AUTH ──
+window.switchAuthTab = function(mode, btn) {
   authMode = mode;
   document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('signup-fields').style.display = mode === 'signup' ? '' : 'none';
   document.getElementById('auth-submit-btn').textContent = mode === 'signup' ? 'Create account' : 'Log in';
   hideAuthMessages();
-}
+};
 
 function showAuthError(msg) {
   const el = document.getElementById('auth-error');
@@ -313,44 +271,34 @@ function hideAuthMessages() {
   document.getElementById('auth-success').style.display = 'none';
 }
 
-async function handleAuth() {
-  const email = document.getElementById('auth-email').value.trim();
+window.handleAuth = async function() {
+  const email    = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value;
-  const btn = document.getElementById('auth-submit-btn');
-
+  const btn      = document.getElementById('auth-submit-btn');
   if (!email || !password) { showAuthError('Please fill in email and password.'); return; }
-
   btn.textContent = 'Please wait…'; btn.disabled = true;
 
   if (authMode === 'signup') {
     const displayName = document.getElementById('auth-displayname').value.trim();
     if (!displayName) { showAuthError('Please enter a display name.'); btn.textContent = 'Create account'; btn.disabled = false; return; }
-
-    const { data, error } = await db.auth.signUp({
-      email, password,
-      options: { data: { display_name: displayName } }
-    });
+    const { error } = await db.auth.signUp({ email, password, options: { data: { display_name: displayName } } });
     btn.textContent = 'Create account'; btn.disabled = false;
     if (error) { showAuthError(error.message); return; }
-    showAuthSuccess('Account created! You are now logged in.');
-
+    showAuthSuccess('Account created! Logging you in…');
   } else {
-    const { data, error } = await db.auth.signInWithPassword({ email, password });
+    const { error } = await db.auth.signInWithPassword({ email, password });
     btn.textContent = 'Log in'; btn.disabled = false;
     if (error) { showAuthError('Wrong email or password.'); return; }
   }
-  // onAuthStateChange will fire and load the app
-}
+};
 
-async function handleSignOut() {
+window.handleSignOut = async function() {
   await db.auth.signOut();
   currentUser = null; currentDisplayName = '';
   document.getElementById('app-screen').style.display = 'none';
   document.getElementById('auth-screen').style.display = 'flex';
-  hideAuthMessages();
-}
+};
 
-// Listen for login / logout events
 db.auth.onAuthStateChange(async (event, session) => {
   if (session && session.user) {
     currentUser = session.user;
@@ -359,188 +307,141 @@ db.auth.onAuthStateChange(async (event, session) => {
     document.getElementById('owner-preview').textContent = currentDisplayName;
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app-screen').style.display = '';
-    await fetchDatabaseData();
+    await fetchData();
   } else {
     document.getElementById('auth-screen').style.display = 'flex';
     document.getElementById('app-screen').style.display = 'none';
   }
 });
 
-// ══════════════════════════════════════
-// 4. DATA FETCHING
-// ══════════════════════════════════════
-async function fetchDatabaseData() {
+// ── DATA ──
+async function fetchData() {
   try {
-    const { data: sData, error: sErr } = await db
-      .from('suitors')
-      .select('*')
-      .order('name', { ascending: true });
-    if (sErr) throw sErr;
-    suitors = sData || [];
-
-    const { data: tData, error: tErr } = await db
-      .from('transactions')
-      .select('*')
-      .order('date', { ascending: false });
-    if (tErr) throw tErr;
-    transactions = tData || [];
-
+    const { data: s, error: se } = await db.from('suitors').select('*').order('name');
+    if (se) throw se;
+    suitors = s || [];
+    const { data: t, error: te } = await db.from('transactions').select('*').order('date', { ascending: false });
+    if (te) throw te;
+    transactions = t || [];
     currentTab === 'cards' ? renderCards() : renderLedger();
-  } catch (err) {
-    alert('Could not load data: ' + err.message);
-  }
+  } catch (err) { alert('Could not load data: ' + err.message); }
 }
 
-// ══════════════════════════════════════
-// 5. HELPERS
-// ══════════════════════════════════════
-function isMyRow(suitor) {
-  return suitor.user_id === currentUser?.id;
-}
-
+// ── HELPERS ──
+function ismine(s) { return s.user_id === currentUser?.id; }
 function getStatus(s) {
-  if (s.credits < s.limit) return { label: 'In debt 🚨', bg: '#FCEBEB', color: '#791F1F' };
-  if (s.credits < 0)       return { label: 'Negative ⚠️', bg: '#FAEEDA', color: '#633806' };
-  if (s.credits < 50)      return { label: 'Low credit',  bg: '#FAEEDA', color: '#633806' };
-  if (s.credits >= 200)    return { label: 'Excellent ★', bg: '#E1F5EE', color: '#085041' };
-  return { label: 'Good standing', bg: '#EAF3DE', color: '#27500A' };
+  if (s.credits < s.limit) return { label:'In debt 🚨', bg:'#FCEBEB', color:'#791F1F' };
+  if (s.credits < 0)       return { label:'Negative ⚠️', bg:'#FAEEDA', color:'#633806' };
+  if (s.credits < 50)      return { label:'Low credit',  bg:'#FAEEDA', color:'#633806' };
+  if (s.credits >= 200)    return { label:'Excellent ★', bg:'#E1F5EE', color:'#085041' };
+  return { label:'Good standing', bg:'#EAF3DE', color:'#27500A' };
 }
-
 function getBarColor(s) {
   if (s.credits < s.limit) return '#E24B4A';
-  if (s.credits < 0)       return '#EF9F27';
-  if (s.credits < 50)      return '#FAC775';
+  if (s.credits < 0) return '#EF9F27';
+  if (s.credits < 50) return '#FAC775';
   return '#1D9E75';
 }
-
 function getBarWidth(s) {
-  const max = 300, min = s.limit;
-  return (Math.max(0, Math.min(1, (s.credits - min) / (max - min))) * 100).toFixed(1) + '%';
+  return (Math.max(0, Math.min(1, (s.credits - s.limit) / (300 - s.limit))) * 100).toFixed(1) + '%';
+}
+function initials(name) { return name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase(); }
+function ownerColor(name) {
+  const p = [{bg:'#E6F1FB',color:'#0C447C'},{bg:'#FBEAF0',color:'#72243E'},{bg:'#E1F5EE',color:'#085041'},{bg:'#FAEEDA',color:'#633806'},{bg:'#EEEDFE',color:'#3C3489'}];
+  let h = 0; for (let i = 0; i < name.length; i++) h += name.charCodeAt(i);
+  return p[h % p.length];
 }
 
-function initials(name) {
-  return name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
-}
-
-// Pick a consistent color per owner name
-function ownerColor(ownerName) {
-  const palette = [
-    { bg: '#E6F1FB', color: '#0C447C' },
-    { bg: '#FBEAF0', color: '#72243E' },
-    { bg: '#E1F5EE', color: '#085041' },
-    { bg: '#FAEEDA', color: '#633806' },
-    { bg: '#EEEDFE', color: '#3C3489' },
-  ];
-  let hash = 0;
-  for (let i = 0; i < ownerName.length; i++) hash += ownerName.charCodeAt(i);
-  return palette[hash % palette.length];
-}
-
-// ══════════════════════════════════════
-// 6. RENDER
-// ══════════════════════════════════════
+// ── RENDER ──
 function renderCards() {
   const c = document.getElementById('cards-container');
-  if (!suitors.length) {
-    c.innerHTML = '<div class="empty-state">No suitors yet. Add one!</div>';
-    renderStats(); return;
-  }
-
+  if (!suitors.length) { c.innerHTML = '<div class="empty-state">No suitors yet. Add one!</div>'; renderStats(); return; }
   c.innerHTML = suitors.map(s => {
     const col = AVATAR_COLORS[s.color_idx % AVATAR_COLORS.length];
     const st = getStatus(s);
-    const mine = isMyRow(s);
-    const cardClass = (s.credits < s.limit ? 'suitor-card debt' : s.credits < 50 ? 'suitor-card low' : 'suitor-card') + (mine ? '' : ' readonly');
-    const myTxs = transactions.filter(t => t.suitor_id === s.id).slice(0, 4);
-    const mini = myTxs.map(t => `<div class="ledger-row"><span style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.reason}</span><span class="amt ${t.type === 'credit' ? 'pos' : 'neg'}">${t.type === 'credit' ? '+' : '-'}${t.amount}</span></div>`).join('');
-    const oc = ownerColor(s.owner);
-
-    const actionButtons = mine
+    const mine = ismine(s);
+    const cls = (s.credits < s.limit ? 'suitor-card debt' : s.credits < 50 ? 'suitor-card low' : 'suitor-card') + (mine ? '' : ' readonly');
+    const txs = transactions.filter(t => t.suitor_id === s.id).slice(0, 4);
+    const mini = txs.map(t => `<div class="ledger-row"><span style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.reason}</span><span class="amt ${t.type==='credit'?'pos':'neg'}">${t.type==='credit'?'+':'-'}${t.amount}</span></div>`).join('');
+    const oc = ownerColor(s.owner || '');
+    const actions = mine
       ? `<div class="card-actions">
-          <button onclick="quickCredit(${s.id})">+ Credit</button>
-          <button onclick="quickDebit(${s.id})">− Debit</button>
-          <button onclick="editSuitor(${s.id})">Edit</button>
-          <button onclick="deleteSuitor(${s.id})" style="color:var(--color-text-danger)">Remove</button>
+          <button onclick="window.quickCredit(${s.id})">+ Credit</button>
+          <button onclick="window.quickDebit(${s.id})">− Debit</button>
+          <button onclick="window.editSuitor(${s.id})">Edit</button>
+          <button onclick="window.deleteSuitor(${s.id})" style="color:var(--color-text-danger)">Remove</button>
         </div>`
       : `<p class="readonly-notice">👀 view only — ${s.owner}'s suitor</p>`;
-
-    return `<div class="${cardClass}">
+    return `<div class="${cls}">
       <div class="suitor-card-header">
         <div class="avatar" style="background:${col.bg};color:${col.text}">${initials(s.name)}</div>
-        <div>
-          <div class="suitor-name">${s.name}</div>
-          <div class="suitor-meta">
-            <span class="tag-owner" style="background:${oc.bg};color:${oc.color}">${s.owner}</span>
-          </div>
-        </div>
+        <div><div class="suitor-name">${s.name}</div>
+        <div class="suitor-meta"><span class="tag-owner" style="background:${oc.bg};color:${oc.color}">${s.owner}</span></div></div>
       </div>
       <div class="credit-display">
-        <div class="credit-score" style="color:${s.credits < 0 ? '#D85A30' : s.credits >= 200 ? '#1D9E75' : 'var(--color-text-primary)'}">${s.credits}</div>
+        <div class="credit-score" style="color:${s.credits<0?'#D85A30':s.credits>=200?'#1D9E75':'var(--color-text-primary)'}">${s.credits}</div>
         <div class="credit-label">credits / floor ${s.limit}</div>
       </div>
       <div class="credit-limit-bar"><div class="credit-bar-fill" style="width:${getBarWidth(s)};background:${getBarColor(s)}"></div></div>
       <span class="status-badge" style="background:${st.bg};color:${st.color}">${st.label}</span>
       ${mini ? `<div class="ledger-mini">${mini}</div>` : ''}
       ${s.notes ? `<div style="font-size:11px;color:var(--color-text-secondary);margin-top:6px;font-style:italic">${s.notes}</div>` : ''}
-      ${actionButtons}
+      ${actions}
     </div>`;
   }).join('');
-
   renderStats();
 }
 
 function renderStats() {
   const el = document.getElementById('summary-stats');
-  if (!el) return;
-  const mine = suitors.filter(s => isMyRow(s));
+  const mine = suitors.filter(s => ismine(s));
   const inDebt = suitors.filter(s => s.credits < s.limit).length;
   const top = suitors.reduce((a, b) => a ? (a.credits > b.credits ? a : b) : b, null);
   const worst = suitors.reduce((a, b) => a ? (a.credits < b.credits ? a : b) : b, null);
   el.innerHTML = `
     <div class="stat-card"><div class="stat-label">Total suitors</div><div class="stat-value">${suitors.length}</div></div>
     <div class="stat-card"><div class="stat-label">Your suitors</div><div class="stat-value">${mine.length}</div></div>
-    <div class="stat-card"><div class="stat-label">In debt</div><div class="stat-value" style="color:${inDebt ? '#D85A30' : 'inherit'}">${inDebt}</div></div>
-    <div class="stat-card"><div class="stat-label">Highest score</div><div class="stat-value" style="color:#1D9E75;font-size:14px">${top ? top.name + ' (' + top.credits + ')' : '—'}</div></div>
-    <div class="stat-card"><div class="stat-label">Lowest score</div><div class="stat-value" style="color:#D85A30;font-size:14px">${worst ? worst.name + ' (' + worst.credits + ')' : '—'}</div></div>
-  `;
+    <div class="stat-card"><div class="stat-label">In debt</div><div class="stat-value" style="color:${inDebt?'#D85A30':'inherit'}">${inDebt}</div></div>
+    <div class="stat-card"><div class="stat-label">Highest score</div><div class="stat-value" style="color:#1D9E75;font-size:14px">${top?top.name+' ('+top.credits+')':'—'}</div></div>
+    <div class="stat-card"><div class="stat-label">Lowest score</div><div class="stat-value" style="color:#D85A30;font-size:14px">${worst?worst.name+' ('+worst.credits+')':'—'}</div></div>`;
 }
 
 function renderLedger() {
   const tbody = document.getElementById('ledger-tbody');
-  if (!transactions.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--color-text-secondary);padding:2rem">No transactions yet.</td></tr>';
-    return;
-  }
+  if (!transactions.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--color-text-secondary);padding:2rem">No transactions yet.</td></tr>'; return; }
   tbody.innerHTML = transactions.map(t => {
     const s = suitors.find(x => x.id === t.suitor_id);
     const name = s ? s.name : '(deleted)';
     const owner = s ? s.owner : '—';
-    const col = AVATAR_COLORS[(s?.color_idx || 0) % AVATAR_COLORS.length];
+    const col = AVATAR_COLORS[(s?.color_idx||0) % AVATAR_COLORS.length];
     const oc = ownerColor(owner);
     return `<tr>
       <td style="color:var(--color-text-secondary);white-space:nowrap">${t.date}</td>
       <td><span style="background:${col.bg};color:${col.text};padding:2px 8px;border-radius:20px;font-size:12px">${name}</span></td>
       <td><span class="tag-owner" style="background:${oc.bg};color:${oc.color}">${owner}</span></td>
       <td>${t.reason}</td>
-      <td style="text-align:right;font-weight:500;color:${t.type === 'credit' ? '#1D9E75' : '#D85A30'}">${t.type === 'credit' ? '+' : '-'}${t.amount}</td>
-      <td style="text-align:right;color:${t.balance_after < 0 ? '#D85A30' : 'var(--color-text-primary)'}">${t.balance_after}</td>
+      <td style="text-align:right;font-weight:500;color:${t.type==='credit'?'#1D9E75':'#D85A30'}">${t.type==='credit'?'+':'-'}${t.amount}</td>
+      <td style="text-align:right;color:${t.balance_after<0?'#D85A30':'var(--color-text-primary)'}">${t.balance_after}</td>
     </tr>`;
   }).join('');
 }
 
-// ══════════════════════════════════════
-// 7. MODALS & ACTIONS
-// ══════════════════════════════════════
-function switchTab(tab, btn) {
+// ── TABS ──
+window.switchTab = function(tab, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   currentTab = tab;
   document.getElementById('view-cards').style.display = tab === 'cards' ? '' : 'none';
   document.getElementById('view-ledger').style.display = tab === 'ledger' ? '' : 'none';
   if (tab === 'ledger') renderLedger();
-}
+};
 
-function addSuitorModal() {
+// ── MODALS ──
+window.closeModals = function() {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+};
+
+window.addSuitorModal = function() {
   editingId = null;
   document.getElementById('suitor-modal-title').textContent = 'Add suitor';
   document.getElementById('s-name').value = '';
@@ -548,11 +449,11 @@ function addSuitorModal() {
   document.getElementById('s-limit').value = -50;
   document.getElementById('s-notes').value = '';
   document.getElementById('suitor-modal').classList.add('open');
-}
+};
 
-function editSuitor(id) {
+window.editSuitor = function(id) {
   const s = suitors.find(x => x.id === id);
-  if (!isMyRow(s)) { alert("You can only edit your own suitors."); return; }
+  if (!ismine(s)) { alert("You can only edit your own suitors."); return; }
   editingId = id;
   document.getElementById('suitor-modal-title').textContent = 'Edit suitor';
   document.getElementById('s-name').value = s.name;
@@ -560,139 +461,86 @@ function editSuitor(id) {
   document.getElementById('s-limit').value = s.limit;
   document.getElementById('s-notes').value = s.notes || '';
   document.getElementById('suitor-modal').classList.add('open');
-}
+};
 
-async function saveSuitor() {
+window.saveSuitor = async function() {
   const name = document.getElementById('s-name').value.trim();
   if (!name) { alert('Name is required'); return; }
-  const credits = parseInt(document.getElementById('s-credits').value) || 0;
-  const limitValue = parseInt(document.getElementById('s-limit').value) || -50;
-  const notes = document.getElementById('s-notes').value.trim();
-
+  const credits   = parseInt(document.getElementById('s-credits').value) || 0;
+  const limitVal  = parseInt(document.getElementById('s-limit').value) || -50;
+  const notes     = document.getElementById('s-notes').value.trim();
   try {
     if (editingId) {
-      const { error } = await db.from('suitors')
-        .update({ name, credits, limit: limitValue, notes })
-        .eq('id', editingId)
-        .eq('user_id', currentUser.id); // extra safety: only update your own
+      const { error } = await db.from('suitors').update({ name, credits, limit: limitVal, notes }).eq('id', editingId).eq('user_id', currentUser.id);
       if (error) throw error;
     } else {
       const colorIdx = Math.floor(Math.random() * AVATAR_COLORS.length);
-      const { error } = await db.from('suitors')
-        .insert([{
-          name,
-          owner: currentDisplayName,
-          credits,
-          limit: limitValue,
-          notes,
-          color_idx: colorIdx,
-          user_id: currentUser.id
-        }]);
+      const { error } = await db.from('suitors').insert([{ name, owner: currentDisplayName, credits, limit: limitVal, notes, color_idx: colorIdx, user_id: currentUser.id }]);
       if (error) throw error;
     }
-    closeModals();
-    await fetchDatabaseData();
-  } catch (err) {
-    alert('Error saving suitor: ' + err.message);
-  }
-}
+    closeModals(); await fetchData();
+  } catch (err) { alert('Error saving: ' + err.message); }
+};
 
-async function deleteSuitor(id) {
+window.deleteSuitor = async function(id) {
   const s = suitors.find(x => x.id === id);
-  if (!isMyRow(s)) { alert("You can only delete your own suitors."); return; }
+  if (!ismine(s)) { alert("You can only delete your own suitors."); return; }
   if (!confirm(`Remove ${s.name} and all their transactions?`)) return;
   try {
     await db.from('transactions').delete().eq('suitor_id', id);
     const { error } = await db.from('suitors').delete().eq('id', id).eq('user_id', currentUser.id);
     if (error) throw error;
-    await fetchDatabaseData();
-  } catch (err) {
-    alert('Error deleting: ' + err.message);
-  }
-}
+    await fetchData();
+  } catch (err) { alert('Error deleting: ' + err.message); }
+};
 
-function openTransactionModal(preId) {
-  // Only show YOUR suitors in the transaction dropdown
-  const mySuitors = suitors.filter(s => isMyRow(s));
-  if (!mySuitors.length) { alert("You don't have any suitors yet. Add one first!"); return; }
+window.openTransactionModal = function(preId) {
+  const mine = suitors.filter(s => ismine(s));
+  if (!mine.length) { alert("Add a suitor first!"); return; }
   const sel = document.getElementById('tx-suitor');
-  sel.innerHTML = mySuitors.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+  sel.innerHTML = mine.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
   if (preId) sel.value = preId;
   document.getElementById('tx-amount').value = 10;
   document.getElementById('tx-reason').value = '';
   document.getElementById('tx-modal').classList.add('open');
-}
+};
 
-function quickCredit(id) {
-  const s = suitors.find(x => x.id === id);
-  if (!isMyRow(s)) return;
-  openTransactionModal(id);
-  document.getElementById('tx-type').value = 'credit';
-}
+window.quickCredit = function(id) { if (!ismine(suitors.find(x=>x.id===id))) return; openTransactionModal(id); document.getElementById('tx-type').value = 'credit'; };
+window.quickDebit  = function(id) { if (!ismine(suitors.find(x=>x.id===id))) return; openTransactionModal(id); document.getElementById('tx-type').value = 'debit'; };
 
-function quickDebit(id) {
-  const s = suitors.find(x => x.id === id);
-  if (!isMyRow(s)) return;
-  openTransactionModal(id);
-  document.getElementById('tx-type').value = 'debit';
-}
-
-async function saveTransaction() {
+window.saveTransaction = async function() {
   const suitorId = parseInt(document.getElementById('tx-suitor').value);
-  const type = document.getElementById('tx-type').value;
-  const amount = Math.abs(parseInt(document.getElementById('tx-amount').value) || 0);
-  const reason = document.getElementById('tx-reason').value.trim() || 'No reason given';
+  const type     = document.getElementById('tx-type').value;
+  const amount   = Math.abs(parseInt(document.getElementById('tx-amount').value) || 0);
+  const reason   = document.getElementById('tx-reason').value.trim() || 'No reason given';
   if (!amount) { alert('Amount must be > 0'); return; }
-
   const s = suitors.find(x => x.id === suitorId);
-  if (!s || !isMyRow(s)) { alert("You can only log transactions for your own suitors."); return; }
-
+  if (!s || !ismine(s)) { alert("You can only log transactions for your own suitors."); return; }
   const newCredits = type === 'credit' ? s.credits + amount : s.credits - amount;
   const today = new Date().toISOString().slice(0, 10);
-
   try {
-    const { error: sErr } = await db.from('suitors')
-      .update({ credits: newCredits })
-      .eq('id', suitorId)
-      .eq('user_id', currentUser.id);
-    if (sErr) throw sErr;
+    const { error: se } = await db.from('suitors').update({ credits: newCredits }).eq('id', suitorId).eq('user_id', currentUser.id);
+    if (se) throw se;
+    const { error: te } = await db.from('transactions').insert([{ suitor_id: suitorId, type, amount, reason, date: today, balance_after: newCredits }]);
+    if (te) throw te;
+    closeModals(); await fetchData();
+  } catch (err) { alert('Transaction failed: ' + err.message); }
+};
 
-    const { error: tErr } = await db.from('transactions')
-      .insert([{ suitor_id: suitorId, type, amount, reason, date: today, balance_after: newCredits }]);
-    if (tErr) throw tErr;
-
-    closeModals();
-    await fetchDatabaseData();
-  } catch (err) {
-    alert('Transaction failed: ' + err.message);
-  }
-}
-
-function closeModals() {
-  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
-}
-
-function exportCSV() {
-  const header = ['Date', 'Suitor', 'Owner', 'Type', 'Amount', 'Reason', 'Balance after', 'Status'];
+window.exportCSV = function() {
+  const header = ['Date','Suitor','Owner','Type','Amount','Reason','Balance after','Status'];
   const rows = transactions.map(t => {
-    const s = suitors.find(x => x.id === t.suitor_id) || { name: 'deleted', owner: '—' };
+    const s = suitors.find(x => x.id === t.suitor_id) || { name:'deleted', owner:'—' };
     const st = getStatus(s);
-    return [t.date, s.name, s.owner, t.type, t.type === 'credit' ? '+' + t.amount : '-' + t.amount, t.reason, t.balance_after, st.label]
-      .map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+    return [t.date,s.name,s.owner,t.type,t.type==='credit'?'+'+t.amount:'-'+t.amount,t.reason,t.balance_after,st.label].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');
   });
-  const summary = 'SUITOR SUMMARY\n' +
-    ['Suitor', 'Owner', 'Credits', 'Limit', 'Status', 'Notes'].join(',') + '\n' +
-    suitors.map(s => {
-      const st = getStatus(s);
-      return [s.name, s.owner, s.credits, s.limit, st.label, s.notes || '']
-        .map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
-    }).join('\n');
-  const csv = [header.join(','), ...rows, '', summary].join('\n');
+  const summary = 'SUITOR SUMMARY\n'+['Suitor','Owner','Credits','Limit','Status','Notes'].join(',')+'\n'+
+    suitors.map(s=>{const st=getStatus(s);return[s.name,s.owner,s.credits,s.limit,st.label,s.notes||''].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');}).join('\n');
+  const csv = [header.join(','),...rows,'',summary].join('\n');
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-  a.download = 'suitor_social_credits.csv';
-  a.click();
-}
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = 'boycrazy_credits.csv'; a.click();
+};
 
 document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) closeModals(); }));
 </script>
